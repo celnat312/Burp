@@ -1,13 +1,16 @@
 from sqlite3 import * 
-
-# Creating the table
+import os.path
 
 class Table():
     def __init__(self):
-        # Opening and accessing the database alongside initialising cursor
-        open('CTD.db', 'w')
-        self.db = connect("CTD.db")
-        self.cursor = self.db.cursor()
+        # Connecting and Accessing database in the "database" folder
+        curr_directory = os.path.dirname(os.path.abspath(__file__))
+        db_folder = "database"
+        db_path = os.path.join(curr_directory, db_folder)
+        os.makedirs(db_path, exist_ok = True)
+        db_file_path = os.path.join(db_path, "CTD.db")
+        self.db = connect(db_file_path) # to connect
+        self.cursor = self.db.cursor() # cursor
 
     def commitChanges(self):
         # Committing the changes
@@ -19,7 +22,13 @@ class Table():
 
 class AccTable(Table):
     def __init__(self):
-        try: 
+        # Inheriting the methods and properties from parent class Table
+        super().__init__()
+
+        # Checking if the table exists in the database
+        result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='AccountDetails'")
+        if result == 0:
+            # Creates the table if it does not exist in the database
             self.cursor.execute("CREATE TABLE AccountDetails(\
                     Username TEXT NOT NULL ,\
                     Password TEXT NOT NULL ,\
@@ -27,13 +36,14 @@ class AccTable(Table):
                     Email TEXT,\
                     PRIMARY KEY(Username));")
             print("Account Table created")
-        except:
-            print("Table was not created.")
+        else:
+            print("Table already exists.")
 
     def getUserExists(self, uName):
+        # Checks if the username exists in the AccountDetails Table
         try:
             # Fetches the Account Details for the specified username
-            self.cursor.execute("SELECT * FROM AccountDetails WHERE Username = ?", (uName))
+            self.cursor.execute("SELECT * FROM AccountDetails WHERE Username = ?", (uName,))
             data = self.cursor.fetchone()
             if data:
                 return True
@@ -43,21 +53,23 @@ class AccTable(Table):
     
     def getPassword(self, uName):
         if self.getUserExists(uName):
-            self.cursor.execute("SELECT Password FROM AccountDetails WHERE Username = ?", (uName))
+            self.cursor.execute("SELECT Password FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
         
     def getEmail(self, uName):
         if self.getUserExists(uName):
-            self.cursor.execute("SELECT Email FROM AccountDetails WHERE Username = ?", (uName))
+            self.cursor.execute("SELECT Email FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
         
     def getProfilePicture(self, uName):
         if self.getUserExists(uName):
-            self.cursor.execute("SELECT ProfilePicture FROM AccountDetails WHERE Username = ?", (uName))
+            self.cursor.execute("SELECT ProfilePicture FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
 
     def makeUser(self, uName, pw, email):
+        # Performing a validation check if the Username is taken (since Username MUST be unique.)
         if not self.getUserExists(uName):
+            # Adds the information to the table to store
             self.cursor.execute("INSERT INTO AccountDetails(Username, Password, Email)\
                                 VALUES(?,?,?)", (uName, pw, email))
             print("Account successfully created!")
@@ -65,7 +77,8 @@ class AccTable(Table):
             print("Account creation was not successful, this username is already taken.")
 
     def forgotPassword(self, uName, newpw):
-        if not self.getUserExists(uName):
+        # Changes the password of an account of a given username
+        if self.getUserExists(uName):
             self.cursor.execute("UPDATE AccountDetails\
                                 SET Password = ?\
                                 WHERE Username = ?", (newpw, uName))
@@ -75,7 +88,13 @@ class AccTable(Table):
             
 class Recipe(Table):
     def __init__(self):
-        try:
+        # Inherits methods and properties from the parent class Table
+        super().__init__()
+
+        # Checks if the table exists in the database
+        result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Recipe'")
+        if result == 0:
+            # Creates the table if it does not exist in the database
             self.cursor.execute("CREATE TABLE Recipe(\
                     ID INTEGER NOT NULL UNIQUE ,\
                     Name TEXT NOT NULL,\
@@ -85,53 +104,107 @@ class Recipe(Table):
                     IngredTag3 TEXT,\
                     CuisineTag TEXT NOT NULL,\
                     VegTag NUMERIC NOT NULL,\
+                    File BLOB,\
+                    Likes INTEGER,\
+                    URL TEXT,\
                     PRIMARY KEY(ID));")
             print("Recipe Table is successively created.")
-        except:
+        else:
             print("Table was not created.")
 
-    def addRecipe(self, rid, name, details, uploaded, IngredTag1, IngredTag2 = None, IngredTag3 = None, cuisine, veg):
-        self.cursor.execute("INSERT INTO Recipe(ID, Name, Details, Uploaded, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag)\
-                            VALUES (?,?,?,?,?,?)", (rid, name, details, uploaded, IngredTag1, IngredTag2, IngredTag3, cuisine, veg))
-        print("Recipe successfully added! ")
+    def addRecipe(self, rid, name, details, uploaded, IngredTag1, Cuisine, veg, IngredTag2 = None, IngredTag3 = None):
+        # Adds a recipe into the database if the RecipeID given is not taken
+        if not self.doesIdExist(rid):
+            self.cursor.execute("INSERT INTO Recipe(ID, Name, Details, Uploaded, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag)\
+                                VALUES (?,?,?,?,?,?)", (rid, name, details, uploaded, IngredTag1, IngredTag2, IngredTag3, Cuisine, veg))
+            print("Recipe successfully added! ")
 
     def doesIdExist(self, rid):
-        self.cursor.execute("SELECT DISTINCT * FROM Recipe WHERE ID = ?", (rid))
+        # Checks if the RecipeID already exists in the database (i.e. if the RecipeID is already taken)
+        self.cursor.execute("SELECT DISTINCT * FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0] == True
 
     def getName(self, rid):
-        self.cursor.execute("SELECT Name FROM Recipe WHERE ID = ?", (rid))
+        self.cursor.execute("SELECT Name FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
     
     def getDetails(self, rid):
-        self.cursor.execute("SELECT Details FROM Recipe WHERE ID = ?", (rid))
+        self.cursor.execute("SELECT Details FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchall()[0]
 
     def getAllIngredTag(self, rid):
-        self.cursor.execute("SELECT IngredTag1, IngredTag2, IngredTag3 FROM Recipe WHERE ID = ?", (rid))
+        # Fetches a list of tuples of all the Ingredient Tags for the specified RecipeID
+        self.cursor.execute("SELECT IngredTag1, IngredTag2, IngredTag3 FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchall()[0]
     
     def getCuisine(self, rid):
-        self.cursor.execute("SELECT Cuisine FROM Recipe WHERE ID = ?", (rid))
+        self.cursor.execute("SELECT Cuisine FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
     
     def isVegetarian(self, rid):
-        self.cursor.execute("SELECT VegTag FROM Recipe WHERE ID = ?", (rid))
+        self.cursor.execute("SELECT VegTag FROM Recipe WHERE ID = ?", (rid,))
         bool = self.cursor.fetchone()[0]
         if bool == 1:
             return True
         return False
 
+    def getFile(self, rid):
+        self.cursor.execute("SELECT File FROM Recipe WHERE ID = ?", (rid,))
+        return self.cursor.fetchone()[0]
+    
+    def getURL(self, rid):
+        self.cursor.execute("SELECT URL FROM Recipe WHERE ID = ?", (rid,))
+        return self.cursor.fetchone()[0]
+    
+    def getLikes(self, rid):
+        self.cursor.execute("SELECT Likes FROM Recipe WHERE ID = ?", (rid,))
+        return self.cursor.fetchone()[0]
+    
+    def getAuthor(self, rid):
+        self.cursor.execute("SELECT Author FROM Recipe WHERE ID = ?", (rid,))
+        return self.cursor.fetchone()[0]
+    
+    def updateLikes(self, rid, newnum):
+        # Updates the number of likes a specified recipe has
+        self.cursor.execute("UPDATE Recipe\
+                            SET Likes = ?\
+                            WHERE ID = ? ", (newnum, rid))
+        print("Likes have been successfully updated.")
+
+    def updateAuthor(self, rid, author):
+        # Updates the author of an uploaded recipe
+        self.cursor.execute("UPDATE Recipe\
+                            SET Author = ?\
+                            WHERE ID = ? ", (author, rid))
+        print("Author have been successfully updated.")
+
+    def updateFiles(self, rid, file):
+        self.cursor.execute("UPDATE Recipe\
+                            SET File = ?\
+                            WHERE ID = ? ", (file, rid))
+        print("Files have been successfully updated.")
+
+    def updateURL(self, rid, newUrl):
+        # Updates the URL of an uploaded recipe
+        self.cursor.execute("UPDATE Recipe\
+                            SET URL = ?\
+                            WHERE ID = ? ", (newUrl, rid))
+        print("URL have been successfully updated.")
+
     def addIngredTag(self, rid, tag):
         result = self.getAllIngredTag(rid)
+
+        # Checks if the List of Ingredient Tags is already fully populated
         if result[0] != None and result[1] != None and result[2] != None:
             print("Unable to add ingredient tag.")
         else:
+            # If the second Ingredient Tag is null, add new Ingredient Tag here
             if result[1] == None:
                 self.cursor.execute("UPDATE Recipe \
                                     SET IngredTag2 = ? \
                                     WHERE ID = ?", (tag, rid))
                 
+            # If the third Ingredient Tag is null, add new Ingredient Tag here    
             else:
                 self.cursor.execute("UPDATE Recipe \
                                     SET IngredTag3 = ? \
@@ -153,7 +226,13 @@ class Recipe(Table):
 
 class PulledRecipe(Table):
     def __init__(self):
-        try: 
+        # Inherits the methods and properties of the parent class Table
+        super().__init__()
+
+        # Checks if the table already exists in the database
+        result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='PulledRecipe'")
+        if result == 0:
+            # Creates the table if it does not exist in the database
             self.cursor.execute("CREATE TABLE PulledRecipe(\
                     QNum INTEGER NOT NULL UNIQUE AUTOINCREMENT,\
                     Name TEXT NOT NULL,\
@@ -162,56 +241,67 @@ class PulledRecipe(Table):
                     URL TEXT NOT NULL,\
                     PRIMARY KEY(QNum));")
             print("Pulled Recipe Table successfully created.")
-        except:  
+        else:
             print("Pulled Recipe Table was not created.")
 
     def getQnum(self, name):
-        self.cursor.execute("SELECT QNum FROM PulledRecipe WHERE Name = ?", (name))
+        self.cursor.execute("SELECT QNum FROM PulledRecipe WHERE Name = ?", (name,))
         return self.cursor.fetchone()
 
     def getName(self, qnum):
-        self.cursor.execute("SELECT Name FROM PulledRecipe WHERE QNum = ?", qnum)
+        self.cursor.execute("SELECT Name FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchone()
     
     def getDetails(self, qnum):
-        self.cursor.execute("SELECT Details FROM PulledRecipe WHERE QNum = ?", qnum)
+        self.cursor.execute("SELECT Details FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchall()
     
     def getFile(self, qnum):
-        self.cursor.execute("SELECT File FROM PulledRecipe WHERE QNum = ?", qnum)
+        self.cursor.execute("SELECT File FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchall()
     
     def getURL(self, qnum):
-        self.cursor.execute("SELECT URL FROM PulledRecipe WHERE QNum = ?", qnum)
+        self.cursor.execute("SELECT URL FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchone()
     
-    def addIntoPulled(self, name, details, file = None, urlink):
+    def addIntoPulled(self, name, details, urlink, file = None):
+        # Adds a log of data into the PulledRecipe table
         self.cursor.execute("INSERT INTO PulledRecipe(Name, Details, File, URL)\
                             VALUES(?,?,?,?)", (name, details, file, urlink))
         print("Recipe successfully added into Pulled Recipe Table.")
         
     def viewAllPulled(self):
+        # Returns all the data stored into the PulledRecipe table
         self.cursor.execute("SELECT * FROM PulledRecipe\
                             ORDER BY QNum ASC")
         return self.cursor.fetchall()
 
     def clearTable(self):
+        # Clears all entries stored into the PulledRecipe table
         self.cursor.execute("DELETE FROM PulledRecipe")
         print("Pulled Recipe Table has been successfully cleared.")
 
     def clearSpecificQNum(self, qnum):
+        # Clears the entry of a specific recipe based on the Queue Number
         self.cursor.execute("DELETE FROM PulledRecipe\
-                            WHERE QNum = ?", (qnum))
+                            WHERE QNum = ?", (qnum,))
         print("QNum ", qnum, "has been successfully removed from the Table.")
     
     def clearSpecificRecipe(self, name):
+        # Clears the entry of a specific recipe based on the Recipe Name
         qnum = self.getQnum(name)
         self.cursor.execute("DELETE FROM PulledRecipe \
-                            WHERE Qnum = ?", (qnum))
+                            WHERE Qnum = ?", (qnum,))
         
 class AccountRecipe(Table):
     def __init__(self):
-        try:
+        # Inherit methods and properties from the parent class Table
+        super().__init__()
+
+        # Checks if the AccountRecipe table exists in the database
+        result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='AccountRecipe'")
+        if result == 0:
+            # Creates the table if it does not exist in the database
             self.cursor.execute("CREATE TABLE AccountRecipe(\
                     Username TEXT NOT NULL ,\
                     RecipeID INTEGER NOT NULL UNIQUE,\
@@ -219,72 +309,22 @@ class AccountRecipe(Table):
                     FOREIGN KEY(RecipeID) REFERENCES Recipe(ID),\
                     PRIMARY KEY(Username, RecipeID));")
             print("Account Recipe Table successfully created.")
-        except:
+        else:
             print("Account Recipe Table was not created.")
 
     def getAllRecipeID(self, uname):
-        self.cursor.execute("SELECT * FROM AccountRecipe WHERE Username = ?", (uname))
+        # Fetches all the Bookmarked Recipes of a specific user
+        self.cursor.execute("SELECT * FROM AccountRecipe WHERE Username = ?", (uname,))
         return self.cursor.fetchall()
 
     def deleteFromAcc(self, uname, rid):
+        # Removes a specific Bookmarked Recipe of a specific user
         self.cursor.execute("DELETE FROM AccountRecipe WHERE Username = ? AND RecipeID = ?", (uname, rid))
         print(rid, "has been successfully removed from ", uname + "'s saved recipes")
 
     def addToAcc(self, uname, rid):
+        # Adds a recipe into the Bookmarked Recipes of a specific user
         self.cursor.execute("INSERT INTO AccountRecipe(Username, RecipeID)\
                             VALUES (?,?)", (uname, rid))
         print(rid, "has been successfully added into ", uname, "'s saved recipes.")
 
-class 
-
-'''  self.cursor.execute("CREATE TABLE AccountDetails(\
-                    Username TEXT NOT NULL ,\
-                    Password TEXT NOT NULL ,\
-                    ProfilePicture BLOB,\
-                    Email TEXT,\
-                    PRIMARY KEY(Username));")
-
-    self.cursor.execute("CREATE TABLE Recipe(\
-                    ID INTEGER NOT NULL UNIQUE,\
-                    Uploaded NUMERIC NOT NULL,\
-                    IngredTag1 TEXT NOT NULL,\
-                    IngredTag2 TEXT,\
-                    IngredTag3 TEXT,\
-                    CuisineTag TEXT NOT NULL,\
-                    VegTag NUMERIC NOT NULL,\
-                    PRIMARY KEY(ID));")
-
-    self.cursor.execute("CREATE TABLE AccountRecipe(\
-                    Username TEXT NOT NULL ,\
-                    RecipeID INTEGER NOT NULL UNIQUE,\
-                    FOREIGN KEY(Username) REFERENCES AccountDetails(Username),\
-                    FOREIGN KEY(RecipeID) REFERENCES Recipe(ID),\
-                    PRIMARY KEY(Username, RecipeID));")
-
-    self.cursor.execute("CREATE TABLE UploadedRecipe(\
-                    ID INTEGER NOT NULL UNIQUE,\
-                    Name TEXT,\
-                    Details TEXT,\
-                    Author TEXT NOT NULL,\
-                    File BLOB, \
-                    Likes INTEGER, \
-                    FOREIGN KEY(ID) REFERENCES Recipe(ID),\
-                    FOREIGN KEY(Author) REFERENCES AccountDetails(Username),\
-                    PRIMARY KEY(ID));")
-
-    self.cursor.execute("CREATE TABLE InternetRecipe(\
-                    ID INTEGER NOT NULL UNIQUE,\
-                    Name TEXT,\
-                    Details TEXT,\
-                    URL TEXT NOT NULL,\
-                    File BLOB, \
-                    FOREIGN KEY(ID) REFERENCES Recipe(ID),\
-                    PRIMARY KEY(ID));")
-
-    self.cursor.execute("CREATE TABLE PulledRecipe(\
-                    QNum INTEGER NOT NULL UNIQUE,\
-                    Name TEXT,\
-                    Details TEXT,\
-                    File BLOB, \
-                    URL TEXT NOT NULL,\
-                    PRIMARY KEY(QNum));") '''

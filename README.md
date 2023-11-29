@@ -10,8 +10,8 @@ we feel that oftentimes when we start living alone, we get overwhelmed by "what 
 Thus, to address this problem, we decided to create a recipe-finding and sharing software to make a Better World By Design.
 
 Furthermore, in this repository, we will be breaking down the different functions into the respective .py files:
-- main.py --> main functions
-- database.py --> initialising database
+- main.py --> main functions of the software
+- database.py --> Initialises the class Table and its respective child classes with their methods
 - login.py --> login functions
 - PullingFromNet.py --> functions relating to pulling recipes, images, url and other information from the internet
 - Interface.py --> functions relating to the interface of the program
