@@ -26,18 +26,18 @@ class AccTable(Table):
         super().__init__()
 
         # Checking if the table exists in the database
-        result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='AccountDetails'")
-        if result == 0:
+        # result = self.cursor.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='AccountDetails'")
+        # if result == 0:
             # Creates the table if it does not exist in the database
-            self.cursor.execute("CREATE TABLE AccountDetails(\
-                    Username TEXT NOT NULL ,\
-                    Password TEXT NOT NULL ,\
-                    ProfilePicture BLOB,\
-                    Email TEXT,\
-                    PRIMARY KEY(Username));")
-            print("Account Table created")
-        else:
-            print("Table already exists.")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS AccountDetails(\
+                Username TEXT NOT NULL ,\
+                Password TEXT NOT NULL ,\
+                ProfilePicture BLOB,\
+                Email TEXT,\
+                PRIMARY KEY(Username));")
+        #     print("Account Table created")
+        # else:
+        #     print("Table already exists.")
 
     def getUserExists(self, uName):
         # Checks if the username exists in the AccountDetails Table
