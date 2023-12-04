@@ -182,7 +182,50 @@ def pull_bookmarked(username):
    return lst
 
 
-#endregion
+# #endregion
+# #start region - functions for forgot password, uploading and pulling recipes.
+# def forgotpass(user):
+#    global AccountTable
+#    u = AccountTable.getUserExists()
+#    pwdn = input('Enter new password: ')
+#    if u  == True:
+#       AccountTable.forgotPassword(user,pwdn)
+#       AccountTable.commitChanges()
+#    else:
+#       print('password not changed)')
+#    return
+
+# #helper function to create unique ids
+# def generate():
+#    ts = int(time.time())
+#    r = ord(title[0])
+#    uid = ts * r
+#    return uid
+
+# #uploads recipes into Recipe
+# Rec = Recipe()
+# def upload(title,it1,it2,it3,cuisine,vegtag,ur):
+#    global Rec, idn
+#    likes = None
+#    uploaded = True
+#    file = None
+#    idn = generate()
+#    author  = 'username' #for now
+
+#    Rec.addRecipe(idn,title,uploaded,it1,it2,it3,cuisine,vegtag,file,author,likes,ur)
+#    Rec.commitChanges()
+
+#    return [title,ur]
+
+# #Pulls uploaded recipes
+# def pullupload(username):
+#    global Rec
+#    author  = username #for now
+#    n = Rec.getName(author)
+#    u = Rec.getURL(author)
+#    l = [n,u]
+#    return l
+   
 
 
 # region Account Changes
