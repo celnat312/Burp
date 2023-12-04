@@ -5,10 +5,15 @@ from tkinter import font
 from tkinter.ttk import *
 from tkinter.ttk import Progressbar
 import webbrowser, functools, sys, time, random
+from tkinter import filedialog
+from tkinter.filedialog import askopenfile
+import os
 
 # Backend (uncomment when pushing to github)
 import BE
 from BE import *
+
+username1 = None
 
 '''
 Uncomment areas around lines:
@@ -256,6 +261,7 @@ class Notebook2(ttk.Frame):  # Create
 
 # ACELINE: 'back' function for page2 to page1
 
+# Cook/Recipe
 class Notebook3(ttk.Frame):  # Cook/Recipe
    def __init__(self, master=None):
       super().__init__(master)
@@ -417,71 +423,138 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
 
 # Bookmark + Uploaded Recipe Under Profile
 class Notebook4(ttk.Frame):
-   def __init__(self, master=None, bottom_frame=None, rectangle_frame=None):
-      super().__init__(master)
-      self.bottom_frame = bottom_frame
-      self.rectangle_frame = rectangle_frame
-      self.create_widgets()
+    def __init__(self, master=None, bottom_frame=None, rectangle_frame=None):
+        super().__init__(master)
+        self.bottom_frame = bottom_frame
+        self.rectangle_frame = rectangle_frame
+        self.create_widgets()
+    
+    def create_widgets(self):
+        # Style
+        self.style = ttk.Style()
+        self.style.configure("StyledFrame.TFrame", background="#c69962")
+        self.configure(style="StyledFrame.TFrame")
+        self.style.configure("TLabel", font=("Consolas", 12))
 
-   def create_widgets(self):
-      # Style
-      self.style = ttk.Style()
-      self.style.configure("StyledFrame.TFrame", background="#c69962")
-      self.configure(style="StyledFrame.TFrame")
-      self.style.configure("TCheckbutton", font=("Consolas", 12))
-      self.style.configure("TLabel", font=("Consolas", 12))
+        # Top half
+        top_frame = ttk.Frame(self)
+        top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-      # Top half
-      top_frame = ttk.Frame(self)
-      top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        # Profile Image
+        if BE.displayPFP(username1) == None:
+           profile_image = tk.Canvas(top_frame, width=100, height=100, bg="gray")
+           profile_image.create_oval(10, 10, 90, 90, fill="#a4b4eb")  # Placeholder circle
+           profile_image.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="e")
+        else:
+           self.img = tk.PhotoImage(file = "profilePicture/" + str(BE.displayPFP(username1)) + ".png")
+           image_label = tk.Label(top_frame, image= self.img)
+           print("label created")
+           #image_label.pack()
+           #print("label packed.")
+           image_label.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="e")
+           print("image displayed.")
 
-      # Profile Image
-      profile_image = tk.Canvas(top_frame, width=100, height=100, bg="gray")
-      profile_image.create_oval(10, 10, 90, 90, fill="#a4b4eb")  # Placeholder circle
-      profile_image.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        # Account Details
+        Profile = str(username1) + "\nProfile Details\nMore Details"
+        account_details = ttk.Label(top_frame, text= Profile)
+        account_details.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-      # Account Details
-      account_details = ttk.Label(top_frame, text="Lorem Ipsum\nProfile Details\nMore Details")
-      account_details.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        # New pfp Button
+        details = tk.Button(top_frame, text="Edit Profile Picture", command=lambda:self.openMoreDetails(root))
+        details.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
-      # Bottom half
-      self.bottom_frame = ttk.Frame(self)
-      self.bottom_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+        # Bottom half
+        self.bottom_frame = ttk.Frame(self, style="StyledFrame.TFrame")
+        self.bottom_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-      # Rectangle with Tabs
-      self.rectangle_frame = ttk.Frame(self.bottom_frame, relief="solid", borderwidth=1)
-      self.rectangle_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+        # Rectangle with Tabs
+        self.rectangle_frame = ttk.Frame(self.bottom_frame, relief="solid", borderwidth=1, style="StyledFrame.TFrame")
+        self.rectangle_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
 
-      # Tabs in the Rectangle
-      tab_control = ttk.Notebook(self.rectangle_frame, style='inner_tab.TNotebook')
+        # Tabs in the Rectangle
+        tab_control = ttk.Notebook(self.rectangle_frame, style='inner_tab.TNotebook')
 
-      # Uploads Tab
-      uploads_tab = ttk.Frame(tab_control)
-      ttk.Label(uploads_tab, text="Content of Uploads Tab", style="TLabel").pack(pady=10)
-      tab_control.add(uploads_tab, text='Uploads')
+        # Uploads Tab
+        uploads_tab = ttk.Frame(tab_control)
+        ttk.Label(uploads_tab, text="Content of Uploads Tab", style="TLabel").pack(pady=10)
+        tab_control.add(uploads_tab, text='Uploads')
 
-      # Bookmarked Tab
-      bookmarked_tab = ttk.Frame(tab_control)
-      ttk.Label(bookmarked_tab, text="Content of Bookmarked Tab", style="TLabel").pack(pady=10)
-      tab_control.add(bookmarked_tab, text='Bookmarked')
+        # Bookmarked Tab
+        bookmarked_tab = ttk.Frame(tab_control)
+        ttk.Label(bookmarked_tab, text="Content of Bookmarked Tab", style="TLabel").pack(pady=10)
+        tab_control.add(bookmarked_tab, text='Bookmarked')
+        
+        # Apply a specific style for the inner notebook
+        inner_tab_style = ttk.Style(tab_control)
+        inner_tab_style.configure('inner_tab.TNotebook.Tab', width=self.rectangle_frame.winfo_screenwidth(), relief='flat', background='#dbc4a5', font=("Consolas", 12))
+        inner_tab_style.map('inner_tab.TNotebook.Tab', background=[('selected', '#dbc4a5')])
 
-      # Apply a specific style for the inner notebook
-      inner_tab_style = ttk.Style(tab_control)
-      inner_tab_style.configure('inner_tab.TNotebook.Tab', width=self.rectangle_frame.winfo_screenwidth(),
-                                borderwidth=1, relief='solid', font=("Consolas", 12))
-      # inner_tab_style.map('inner_tab.TNotebook.Tab', background=[('selected', 'blue')])
+        # Pack the Notebook (Tabs)
+        tab_control.pack(expand=1, fill="both")
 
-      # Pack the Notebook (Tabs)
-      tab_control.pack(expand=1, fill="both")
+        # Configure row and column weights for proper resizing
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.bottom_frame.grid_rowconfigure(0, weight=1)
+        self.bottom_frame.grid_columnconfigure(0, weight=1)
+        self.rectangle_frame.grid_rowconfigure(0, weight=1)
+        self.rectangle_frame.grid_columnconfigure(0, weight=1)
 
-      # Configure row and column weights for proper resizing
-      self.grid_rowconfigure(0, weight=1)
-      self.grid_rowconfigure(1, weight=1)
-      self.grid_columnconfigure(0, weight=1)
-      self.bottom_frame.grid_rowconfigure(0, weight=1)
-      self.bottom_frame.grid_columnconfigure(0, weight=1)
-      self.rectangle_frame.grid_rowconfigure(0, weight=1)
-      self.rectangle_frame.grid_columnconfigure(0, weight=1)
+    def openMoreDetails(self,root):
+        # Create a new Toplevel window
+        more_details_window = tk.Toplevel(root)
+
+        # Adjust size
+        more_details_window.geometry("750x525")
+        # set minimum window size value
+        more_details_window.minsize(750, 525)
+        # set maximum window size value
+        more_details_window.maxsize(750, 525)
+
+        # Title
+        more_details_window.title("Select a new Profile Picture")
+
+        # Celine's content code
+        l1 = tk.Label(more_details_window,text='Choose a new Profile Picture :DD', width=30)  
+        l1.grid(row=1,column=1)
+
+        pfpimg1 = PhotoImage(file="profilePicture/1.png")
+        b1 = tk.Button(more_details_window, image=pfpimg1, command= lambda: self.sendBEPfP(1, more_details_window))
+        b1.image = pfpimg1
+        b1.grid(row=2, column=1)
+
+        pfpimg2 = PhotoImage(file="profilePicture/2.png")
+        b2 = tk.Button(more_details_window, image=pfpimg2, command = lambda: self.sendBEPfP(2, more_details_window))
+        b2.image = pfpimg2
+        b2.grid(row=2, column=2)
+
+        pfpimg3 = PhotoImage(file="profilePicture/3.png")
+        b3 = tk.Button(more_details_window, image=pfpimg3,command = lambda: self.sendBEPfP(3, more_details_window))
+        b3.image = pfpimg3
+        b3.grid(row=2, column=3)
+
+        pfpimg4 = PhotoImage(file="profilePicture/4.png")
+        b4 = tk.Button(more_details_window, image=pfpimg4, command = lambda: self.sendBEPfP(4, more_details_window))
+        b4.image = pfpimg4
+        b4.grid(row=3, column=1)
+
+        pfpimg5 = PhotoImage(file="profilePicture/5.png")
+        b5 = tk.Button(more_details_window, image=pfpimg5, command = lambda: self.sendBEPfP(5, more_details_window))
+        b5.image = pfpimg5
+        b5.grid(row=3, column=2)
+
+        pfpimg6 = PhotoImage(file="profilePicture/6.png")
+        b6 = tk.Button(more_details_window, image=pfpimg6, command = lambda: self.sendBEPfP(6, more_details_window))
+        b6.image = pfpimg6
+        b6.grid(row=3, column=3)
+
+    def sendBEPfP(self, num, window):
+      global username1
+      print(num)
+      BE.changePFP(username1, num)
+      window.destroy()
+      
 
 # General Layout + Login Page
 class MYGUI:
@@ -580,6 +653,7 @@ class MYGUI:
       return "#%02x%02x%02x" % rgb
 
    def openLoginPage(self, root):
+
       # Create a custom style with the desired background color
       style = ttk.Style()
       style.configure("Custom.TFrame", background="#dbc4a5", font=("Consolas", 12))
@@ -640,12 +714,14 @@ class MYGUI:
          widget.grid(padx=5, pady=5)
 
    def validateLogin(self, root, username, password):
+      global username1
       print("username entered :", username.get())
       print("password entered :", password.get())
 
       # Backend
       r = BE.userlogin(username.get(), password.get())
 
+      username1 = username.get()
       # Backend
       if r == 'Login successfully':
          self.openMainNotebooks(root)

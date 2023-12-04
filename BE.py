@@ -183,3 +183,20 @@ def pull_bookmarked(username):
 
 
 #endregion
+
+
+# region Account Changes
+
+def changePFP(uName,num):
+      global AccountTable
+      AccountTable.updateProfilePicture(uName, num)
+      AccountTable.commitChanges()
+      print("Profile Picture updated.")
+
+def displayPFP(uName):
+   global AccountTable
+   img = AccountTable.getProfilePicture(uName)
+   print(img)
+   return img
+
+#endregion

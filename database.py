@@ -29,7 +29,7 @@ class AccTable(Table):
         self.cursor.execute("CREATE TABLE IF NOT EXISTS AccountDetails(\
                 Username TEXT NOT NULL ,\
                 Password TEXT NOT NULL ,\
-                ProfilePicture BLOB,\
+                ProfilePicture INTEGER,\
                 Email TEXT,\
                 PRIMARY KEY(Username));")
 
@@ -59,6 +59,13 @@ class AccTable(Table):
         if self.getUserExists(uName):
             self.cursor.execute("SELECT ProfilePicture FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
+        
+    def updateProfilePicture(self, uName, choice):
+        if self.getUserExists(uName):
+            self.cursor.execute("UPDATE AccountDetails \
+                                SET ProfilePicture = ?\
+                                WHERE Username = ?", (choice, uName))
+            print("Profile Picture successfully updated")
 
     def makeUser(self, uName, pw, email):
         # Performing a validation check if the Username is taken (since Username MUST be unique.)
@@ -133,6 +140,10 @@ class Recipe(Table):
     def getName(self, rid):
         self.cursor.execute("SELECT Name FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
+    
+    def getAllBookmarkedRecipe(self, uName):
+        self.cursor.execute("SELECT * Name, Details, Likes, URL WHERE Author = ?", (uName,))
+        return self.cursor.fetchall()
 
     def getNames(self, rids):
         placeholders = ', '.join(['?' for _ in rids])
