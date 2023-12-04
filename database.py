@@ -66,9 +66,9 @@ class AccTable(Table):
             # Adds the information to the table to store
             self.cursor.execute("INSERT INTO AccountDetails(Username, Password, Email)\
                                 VALUES(?,?,?)", (uName, pw, email))
-            print("Account successfully created!")
+            return True
         else:
-            print("Account creation was not successful, this username is already taken.")
+            return False
 
     def forgotPassword(self, uName, newpw):
         # Changes the password of an account of a given username
@@ -97,11 +97,11 @@ class Recipe(Table):
                 CuisineTag TEXT NOT NULL,\
                 VegTag NUMERIC NOT NULL,\
                 File BLOB,\
-                Author TEXT NOT NULL,\
+                Author TEXT,\
                 Likes INTEGER,\
                 URL TEXT,\
                 PRIMARY KEY(ID)\
-                FOREIGN KEY(Author) REFERENCES AccTable(Username);")
+                FOREIGN KEY(Author) REFERENCES AccTable(Username));")
 
     def addRecipe(self, rid, name, details, uploaded, IngredTag1, Cuisine, veg, author, likes, ur, IngredTag2=None, IngredTag3=None):
         # Adds a recipe into the database if the RecipeID given is not taken
@@ -109,6 +109,7 @@ class Recipe(Table):
             self.cursor.execute("INSERT INTO Recipe(ID, Name, Details,Uploaded, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag)\
                                 VALUES (?,?,?,?,?,?)", (rid, name, details, uploaded, IngredTag1, IngredTag2, IngredTag3, Cuisine, veg))
         print("Recipe successfully added! ")
+
     def addManyRecipes(self, rids, recipes):
         # Adds a recipe into the database if the RecipeID given is not taken
         if not self.doesIdListExist(rids):

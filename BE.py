@@ -1,9 +1,11 @@
 from urllib.request import urlopen
 import json
 from database import AccTable, AccountRecipe, Recipe
-from credential.api_key import API_KEY, SEARCH_ENGINE_ID
+#from credential.api_key import API_KEY, SEARCH_ENGINE_ID
 import tkinter as tk
 import http.client
+
+
 
 AccountTable = AccTable()
 Recipe = Recipe()
@@ -109,9 +111,13 @@ def get_online_recipe(ingredient, cuisine, veg):
 def addnewuser(username, pd, email):
    global AccountTable
    # email = None   # for now
-   AccountTable.makeUser(username, pd, email)
-   AccountTable.commitChanges()
-   return
+   result = AccountTable.makeUser(username, pd, email)
+   if result == 1:
+      AccountTable.commitChanges()
+      print("Account successfully created")
+   else:
+      print("Account Creation was not successful, this username is already taken")
+   return result
 
 def userlogin(username, pd):
    global AccountTable
@@ -177,8 +183,3 @@ def pull_bookmarked(username):
 
 
 #endregion
-
-if __name__ == "__main__":
-
-   # print(pull_bookmarked('test'))
-
