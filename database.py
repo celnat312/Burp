@@ -1,4 +1,4 @@
-from sqlite3 import * 
+from sqlite3 import *
 import os.path
 
 class Table():
@@ -15,7 +15,7 @@ class Table():
     def commitChanges(self):
         # Committing the changes
         self.db.commit()
-    
+
     def closeConnection(self):
         # Closing the database
         self.db.close()
@@ -44,22 +44,22 @@ class AccTable(Table):
             return False
         except:
             return False
-    
+
     def getPassword(self, uName):
         if self.getUserExists(uName):
             self.cursor.execute("SELECT Password FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
-        
+
     def getEmail(self, uName):
         if self.getUserExists(uName):
             self.cursor.execute("SELECT Email FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
-        
+
     def getProfilePicture(self, uName):
         if self.getUserExists(uName):
             self.cursor.execute("SELECT ProfilePicture FROM AccountDetails WHERE Username = ?", (uName,))
             return self.cursor.fetchone()[0]
-        
+
     def updateProfilePicture(self, uName, choice):
         if self.getUserExists(uName):
             self.cursor.execute("UPDATE AccountDetails \
@@ -79,6 +79,7 @@ class AccTable(Table):
 
     def forgotPassword(self, uName, newpw):
         # Changes the password of an account of a given username
+        print(uName, newpw)
         if self.getUserExists(uName):
             self.cursor.execute("UPDATE AccountDetails\
                                 SET Password = ?\
@@ -110,18 +111,18 @@ class Recipe(Table):
                 PRIMARY KEY(ID)\
                 FOREIGN KEY(Author) REFERENCES AccTable(Username));")
 
-    def addRecipe(self, rid, name, details, uploaded, IngredTag1, Cuisine, veg, author, likes, ur, IngredTag2=None, IngredTag3=None):
+    def addRecipe(self, rid, name, uploaded, IngredTag1, Cuisine, veg, auther, url, IngredTag2=None, IngredTag3=None):
         # Adds a recipe into the database if the RecipeID given is not taken
         if not self.doesIdExist(rid):
-            self.cursor.execute("INSERT INTO Recipe(ID, Name, Details,Uploaded, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag)\
-                                VALUES (?,?,?,?,?,?)", (rid, name, details, uploaded, IngredTag1, IngredTag2, IngredTag3, Cuisine, veg))
-        print("Recipe successfully added! ")
+            self.cursor.execute("INSERT INTO Recipe(ID, Name, Uploaded, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag, Author, URL)\
+                                VALUES (?,?,?,?,?,?,?,?,?,?)", (rid, name, uploaded, IngredTag1, IngredTag2, IngredTag3, Cuisine, veg, auther, url))
+        print("Uploaded recipe successfully added! ")
 
     def addManyRecipes(self, rids, recipes):
         # Adds a recipe into the database if the RecipeID given is not taken
         if not self.doesIdListExist(rids):
-            self.cursor.executemany("INSERT INTO Recipe(ID, Name, Details, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag, File, url)\
-                                VALUES (?,?,?,?,?,?,?,?,?,?)", recipes)
+            self.cursor.executemany("INSERT INTO Recipe(ID, Name, Details, IngredTag1, IngredTag2, IngredTag3, CuisineTag, VegTag, url)\
+                                VALUES (?,?,?,?,?,?,?,?,?)", recipes)
             print("Recipe successfully added! ")
 
     def doesIdListExist(self, rids):
@@ -135,21 +136,21 @@ class Recipe(Table):
     def doesIdExist(self, rid):
         # Checks if the RecipeID already exists in the database (i.e. if the RecipeID is already taken)
         self.cursor.execute("SELECT DISTINCT * FROM Recipe WHERE ID = ?", (rid,))
-        return self.cursor.fetchone()[0] == True
+        return self.cursor.fetchone() is not None and self.cursor.fetchone()[0] == True
 
     def getName(self, rid):
         self.cursor.execute("SELECT Name FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
-    
-    def getAllBookmarkedRecipe(self, uName):
-        self.cursor.execute("SELECT * Name, Details, Likes, URL WHERE Author = ?", (uName,))
+
+    def getAllPulledRecipe(self, uName):
+        self.cursor.execute("SELECT Name, URL FROM Recipe WHERE Author = ?", (uName,))
         return self.cursor.fetchall()
 
     def getNames(self, rids):
         placeholders = ', '.join(['?' for _ in rids])
         self.cursor.execute("SELECT Name FROM Recipe WHERE ID in ({})".format(placeholders), tuple(rids))
         return self.cursor.fetchall()
-    
+
     def getDetails(self, rid):
         self.cursor.execute("SELECT Details FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchall()[0]
@@ -158,11 +159,11 @@ class Recipe(Table):
         # Fetches a list of tuples of all the Ingredient Tags for the specified RecipeID
         self.cursor.execute("SELECT IngredTag1, IngredTag2, IngredTag3 FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchall()[0]
-    
+
     def getCuisine(self, rid):
         self.cursor.execute("SELECT Cuisine FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
-    
+
     def isVegetarian(self, rid):
         self.cursor.execute("SELECT VegTag FROM Recipe WHERE ID = ?", (rid,))
         bool = self.cursor.fetchone()[0]
@@ -173,7 +174,7 @@ class Recipe(Table):
     def getFile(self, rid):
         self.cursor.execute("SELECT File FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
-    
+
     def getURL(self, rid):
         self.cursor.execute("SELECT URL FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
@@ -186,15 +187,15 @@ class Recipe(Table):
     def getIDbyUrl(self, url):
         self.cursor.execute("SELECT ID FROM Recipe WHERE URL = ?", (url,))
         return self.cursor.fetchone()[0]
-    
+
     def getLikes(self, rid):
         self.cursor.execute("SELECT Likes FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
-    
+
     def getAuthor(self, rid):
         self.cursor.execute("SELECT Author FROM Recipe WHERE ID = ?", (rid,))
         return self.cursor.fetchone()[0]
-    
+
     def updateLikes(self, rid, newnum):
         # Updates the number of likes a specified recipe has
         self.cursor.execute("UPDATE Recipe\
@@ -234,14 +235,14 @@ class Recipe(Table):
                 self.cursor.execute("UPDATE Recipe \
                                     SET IngredTag2 = ? \
                                     WHERE ID = ?", (tag, rid))
-                
-            # If the third Ingredient Tag is null, add new Ingredient Tag here    
+
+            # If the third Ingredient Tag is null, add new Ingredient Tag here
             else:
                 self.cursor.execute("UPDATE Recipe \
                                     SET IngredTag3 = ? \
                                     WHERE ID = ?", (tag, rid))
             print(str(tag), "Tag successfully added!")
-    
+
     def changeCuisineTag(self, rid, cuisine):
         self.cursor.execute("UPDATE Recipe \
                              SET CuisineTag = ? \
@@ -281,29 +282,33 @@ class PulledRecipe(Table):
     def getName(self, qnum):
         self.cursor.execute("SELECT Name FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchone()
-    
+
     def getDetails(self, qnum):
         self.cursor.execute("SELECT Details FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchall()
-    
+
     def getFile(self, qnum):
         self.cursor.execute("SELECT File FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchall()
-    
+
     def getURL(self, qnum):
         self.cursor.execute("SELECT URL FROM PulledRecipe WHERE QNum = ?", (qnum,))
         return self.cursor.fetchone()
-    
+
     def addIntoPulled(self, name, details, urlink, file = None):
         # Adds a log of data into the PulledRecipe table
         self.cursor.execute("INSERT INTO PulledRecipe(Name, Details, File, URL)\
                             VALUES(?,?,?,?)", (name, details, file, urlink))
         print("Recipe successfully added into Pulled Recipe Table.")
-        
+
     def viewAllPulled(self):
         # Returns all the data stored into the PulledRecipe table
         self.cursor.execute("SELECT * FROM PulledRecipe\
                             ORDER BY QNum ASC")
+        return self.cursor.fetchall()
+
+    def getAllBookmarkedRecipe(self, uName):
+        self.cursor.execute("SELECT * Name, Details, Likes, URL WHERE Author = ?", (uName,))
         return self.cursor.fetchall()
 
     def clearTable(self):
@@ -316,13 +321,13 @@ class PulledRecipe(Table):
         self.cursor.execute("DELETE FROM PulledRecipe\
                             WHERE QNum = ?", (qnum,))
         print("QNum ", qnum, "has been successfully removed from the Table.")
-    
+
     def clearSpecificRecipe(self, name):
         # Clears the entry of a specific recipe based on the Recipe Name
         qnum = self.getQnum(name)
         self.cursor.execute("DELETE FROM PulledRecipe \
                             WHERE Qnum = ?", (qnum,))
-        
+
 class AccountRecipe(Table):
     def __init__(self):
         # Inherit methods and properties from the parent class Table

@@ -10,10 +10,10 @@ we feel that oftentimes when we start living alone, we get overwhelmed by "what 
 Thus, to address this problem, we decided to create a recipe-finding and sharing software to make a Better World By Design.
 
 Furthermore, in this repository, we will be breaking down the different functions into the respective .py files:
-- main.py --> main functions of the software
+- burp_final.py --> main functions of the software (FE codes linked to BE)
 - database.py --> Initialises the class Table and its respective child classes with their methods
-- login.py --> login functions
-- PullingFromNet.py --> functions relating to pulling recipes, images, url and other information from the internet
-- Interface.py --> functions relating to the interface of the program
+- BE.py --> all BE functions 
+
+Reminder insert your own API_KEY and SEARCH_ENGINE_ID in "credential" folder
 
 If you have any queries regarding this project, feel free to contact any one of the contributors for further information!

@@ -10,18 +10,6 @@ import webbrowser, functools, sys, time, random
 import BE
 from BE import *
 
-'''
-Uncomment areas around lines:
-- store_data(self): 267
-- save recipe:
-- show_page2: 436
-- uploads/bookmarked: 516
-- sendBEPfP: 613
-- login: 733
-- create acc: 935
-- forget pwd: 810
-'''
-
 username1 = None
 
 
@@ -216,9 +204,10 @@ class Notebook2(ttk.Frame):  # Create
         ttk.Frame(page1).grid(row=3, column=1, columnspan=5, pady=7)
 
         # Ingredients Section
-        ttk.Label(page1, text="Ingredients:", background="#d0b38b", font=("Consolas", 12)).grid(row=4, column=1, padx=15,
-                                                                                               pady=5, columnspan=3,
-                                                                                               sticky="w")
+        ttk.Label(page1, text="Ingredients:", background="#d0b38b", font=("Consolas", 12)).grid(row=4, column=1,
+                                                                                                padx=15,
+                                                                                                pady=5, columnspan=3,
+                                                                                                sticky="w")
         ingredients_list = ["Rice", "Noodles", "Pasta", "Potato", "Chicken", "Beef", "Pork", "Fish", "Egg", "Milk",
                             "Cheese", "Yoghurt", "Carrot", "Tomato", "Lettuce", "Brocoli", "Bok Choy", "Soya Sauce",
                             "Chili", "Ketchup", "Fish Sauce"]
@@ -230,8 +219,8 @@ class Notebook2(ttk.Frame):  # Create
 
         # Cuisine Section
         ttk.Label(page1, text="Cuisine:", background="#d0b38b", font=("Consolas", 12)).grid(row=13, column=1, padx=15,
-                                                                                           pady=5, columnspan=3,
-                                                                                           sticky="w")
+                                                                                            pady=5, columnspan=3,
+                                                                                            sticky="w")
         cuisine_list = ["Indonesian", "Singaporean", "Chinese", "Malay", "Indian", "Western", "Korean", "Japanese"]
         self.cuisine_var = self.create_checkbox_columns(page1, cuisine_list, 2, 1, 14)
         self.cuisine_list = cuisine_list
@@ -273,21 +262,17 @@ class Notebook2(ttk.Frame):  # Create
         veg_bool = self.var.get()
         selected_ingredients = [item for item, var in zip(self.ingredients_list, self.ingredients_var) if var.get()]
         selected_cuisine = [item for item, var in zip(self.cuisine_list, self.cuisine_var) if var.get()]
-        # print(dishName, urlLink, veg_bool, selected_cuisine, selected_ingredients)
-        return dishName, urlLink, veg_bool, selected_cuisine, selected_ingredients
+        if veg_bool == True:
+            vegmsg = "Yes"
+        else:
+            vegmsg = "No"
+        mc = "Dish name: " + dishName + "\nURL: " + urlLink + "\nVegetarian: " + vegmsg + "\nIngredients: " + str(
+            selected_ingredients) + "\nCuisine(s): " + str(selected_cuisine)
+        messagebox.showinfo(title="Recipe Uploaded!", message=mc)
+        BE.upload(dishName, urlLink, veg_bool, selected_cuisine, selected_ingredients, username1)
 
-    def store_data(self):
-        dishName, urlLink, veg_bool, selected_cuisine, selected_ingredients = self.send_data()
-        pass
-        '''
-        try:
-            BE.upload(title,it1,it2,it3,cuisine,vegtag,ur)
-        except:
-            print('Recipe not uploaded')
-        '''
+        MYGUI.openMainNotebooks(MYGUI, root)
 
-
-# ACELINE: 'back' function for page2 to page1
 
 class Notebook3(ttk.Frame):  # Cook/Recipe
     def __init__(self, master=None):
@@ -338,9 +323,10 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
         ttk.Frame(page1).grid(row=0, column=0, columnspan=5, pady=7)
 
         # Ingredients Section
-        ttk.Label(page1, text="Ingredients:", background="#d0b38b", font=("Consolas", 12)).grid(row=1, column=1, padx=15,
-                                                                                               pady=5, columnspan=3,
-                                                                                               sticky="w")
+        ttk.Label(page1, text="Ingredients:", background="#d0b38b", font=("Consolas", 12)).grid(row=1, column=1,
+                                                                                                padx=15,
+                                                                                                pady=5, columnspan=3,
+                                                                                                sticky="w")
         ingredients_list = ["Rice", "Noodles", "Pasta", "Potato", "Chicken", "Beef", "Pork", "Fish", "Egg", "Milk",
                             "Cheese", "Yoghurt", "Carrot", "Tomato", "Lettuce", "Brocoli", "Bok Choy", "Soya Sauce",
                             "Chili", "Ketchup", "Fish Sauce"]
@@ -352,8 +338,8 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
 
         # Cuisine Section
         ttk.Label(page1, text="Cuisine:", background="#d0b38b", font=("Consolas", 12)).grid(row=10, column=1, padx=15,
-                                                                                           pady=5, columnspan=3,
-                                                                                           sticky="w")
+                                                                                            pady=5, columnspan=3,
+                                                                                            sticky="w")
         cuisine_list = ["Indonesian", "Singaporean", "Chinese", "Malay", "Indian", "Western", "Korean", "Japanese"]
         self.cuisine_var = self.create_checkbox_columns(page1, cuisine_list, 2, 1, 11)
         self.cuisine_list = cuisine_list
@@ -438,13 +424,6 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
             # Replace with the actual URL based on the selected recipe - link comes from BE
             webbrowser.open(url, new=1)
 
-        '''
-        for i in text:
-            link = (i.split('\n'))[2]
-            print(link)
-            ttk.Button(self.page2, text=i, command=lambda link=link: open_recipe_link(link)).pack()
-        '''
-
         # text = [
         #     'Singapore Noodles (星洲炒米粉, Singapore Mei Fun)\nNov 18, 2022 ... Easy Singapore noodles recipe featuring rice vermicelli noodles tossed in a curry sauce with shrimp, BBQ pork, crispy onions and peppers.\nhttps://omnivorescookbook.com/singapore-noodles/',
         #     'Chow Mein | RecipeTin Eats\nOct 26, 2019 ... This real Chicken Chow Mein recipe really is restaurant quality. It ... Pad Thai, Pad See Ew (Thai Stir Fried Noodles), Singapore Noodles,\xa0...\nhttps://www.recipetineats.com/chicken-chow-mein/',
@@ -456,6 +435,10 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
         #     'Singapore Noodles Recipe | Feasting At Home\nDec 28, 2018 ... Ingredients · 8–10 ounces chicken or tofu cut into 3/4 inch cubes ( or whole raw shrimp) · 1/4 teaspoon salt · 1–2 tablespoons wok oil – a high\xa0...\nhttps://www.feastingathome.com/singapore-noodles/',
         #     'Singapore Noodles\nthat chicken rice is all about the rice and the chicken, but this sauce is what ties everything together. Third, the chicken in these recipes never ever had\xa0...\nhttps://www.facebook.com/sgpnoodles/',
         #     "Genio Ng (@geniuseatss) • Instagram photos and videos\nBased in Sydney Flipping crepes at @kurepucrepes : genio@gushcloudtalent.com. geniuseatss.com + 1. Seoul's profile picture. Seoul. Singapore's\xa0...\nhttps://www.instagram.com/geniuseatss/?hl=en"]
+
+        def update_bookmark_func(u, r):
+            BE.bookmark(u, r)
+            messagebox.showinfo(title="quack!", message="Bookmarked!")
 
         for i in text:
             username = username1  # todo change to username1 afterwards
@@ -476,7 +459,8 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
             descrip_label = ttk.Label(frame, text=discription, wraplength=800, background="#d0b38b")
             descrip_label.grid(row=2, column=0, columnspan=2, sticky="w", padx=(10, 0))
 
-            button = ttk.Button(frame, text="bookmark", command=lambda u=username, r=i: BE.bookmark(u, r))
+            button = ttk.Button(frame, text="bookmark", command=lambda: update_bookmark_func(username, i))
+            print("burp bookmarked", username, i)
             button.grid(row=2, column=1, sticky="e", padx=(800, 0))
 
 
@@ -502,17 +486,36 @@ class Notebook4(ttk.Frame):
         top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         # Profile Image
-        profile_image = tk.Canvas(top_frame, width=100, height=100, bg="gray")
-        profile_image.create_oval(10, 10, 90, 90, fill="#a4b4eb")  # Placeholder circle
-        profile_image.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="e")
+        if BE.displayPFP(username1) == None:
+            profile_image = tk.Canvas(top_frame, width=100, height=100, bg="gray")
+            profile_image.create_oval(10, 10, 90, 90, fill="#a4b4eb")  # Placeholder circle
+            profile_image.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="e")
+        else:
+            self.img = tk.PhotoImage(file="profilePicture/" + str(BE.displayPFP(username1)) + ".png")
+            image_label = tk.Label(top_frame, image=self.img)
+            print("label created")
+            image_label.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="e")
+            print("image displayed.")
 
         # Account Details
-        account_details = ttk.Label(top_frame, text="Lorem Ipsum\nProfile Details\nMore Details", style="TLabel")
+        Profile = str(username1) + "\nProfile Details\nMore Details"
+        account_details = ttk.Label(top_frame, text=Profile, style="TLabel")
         account_details.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
         # New pfp btn
         details = tk.Button(top_frame, text="Edit Profile Picture", command=lambda: self.openMoreDetails(root))
         details.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+        # empty column
+        ttk.Frame(top_frame).grid(row=0, column=2, rowspan=2, padx=220)
+
+        # Logout button
+        logout = ttk.Button(top_frame, text="Logout", command=lambda: login(), style="Custom.TButton")
+        logout.grid(row=0, column=3, sticky="ne")
+
+        def login():
+            messagebox.showerror(title="Jokes On You",
+                                 message="hah! you thought you could log out?:P\nRestart the program, you lazy pig *disappointed sigh*")
 
         # Bottom half
         self.bottom_frame = ttk.Frame(self, style="StyledFrame.TFrame")
@@ -523,29 +526,42 @@ class Notebook4(ttk.Frame):
         self.rectangle_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
 
         # Tabs in the Rectangle
-        # inner_tab_style = ttk.Style(self.tab_control)
-        # inner_tab_style.configure('inner_tab.TNotebook', background="#d0b38b")
         tab_control = ttk.Notebook(self.rectangle_frame, style='inner_tab.TNotebook')
         tab_control.configure(style='inner_tab.TNotebook')
-
-        # Uploads Tab
-        uploads_tab = ttk.Frame(tab_control)
-        ttk.Label(uploads_tab, text="Content of Uploads Tab", style="inner.TLabel").pack(pady=10)
-        tab_control.add(uploads_tab, text='Uploads')
 
         def open_recipe_link(url):
             # Replace with the actual URL based on the selected recipe - link comes from BE
             webbrowser.open(url, new=1)
 
-            # Bookmarked Tab
+        # new Uploads Tab
+        uploads_tab = ttk.Frame(tab_control, style="StyledFrame.TFrame")
+        content_uploads = BE.pullupload(username)
+        print("content_upload", content_uploads)
 
-        bookmarked_tab = ttk.Frame(tab_control)
+        for i in content_uploads:
+            print(i)
+            title = i[0]
+            link = i[1]
+
+            frameUT = tk.Frame(uploads_tab, bg="#c5a16f")
+            frameUT.pack(fill="both", expand=True)
+
+            # Spacer
+            ttk.Frame(frameUT).grid(row=0, column=0, columnspan=2, pady=5)
+
+            title_label = tk.Label(frameUT, text=title, bg="#c5a16f", cursor="hand2", foreground="blue")
+            title_label.grid(row=1, column=0, columnspan=2, sticky="w", padx=(10, 0))
+            title_label.bind("<Button-1>", lambda event, link=link: open_recipe_link(link))
+
+        tab_control.add(uploads_tab, text='Uploads')
+
+        # Bookmarked Tab
+        bookmarked_tab = ttk.Frame(tab_control, style="StyledFrame.TFrame")
+        print(username)
         content_bookmarked = BE.pull_bookmarked(username)
 
-        # myscrollbar = Scrollbar(bookmarked_tab, orient="vertical")
-        # myscrollbar.pack(side="right", fill="y")
-
         for i in content_bookmarked:
+            print(i)
             title = (i.split('\n'))[0]
             link = (i.split('\n'))[1]
 
@@ -559,8 +575,7 @@ class Notebook4(ttk.Frame):
             title_label.grid(row=1, column=0, columnspan=2, sticky="w", padx=(10, 0))
             title_label.bind("<Button-1>", lambda event, link=link: open_recipe_link(link))
 
-        # print(content_bookmarked)
-        # ttk.Label(bookmarked_tab, text=content_bookmarked, style="TLabel").pack(pady=10)
+        print(content_bookmarked)
         tab_control.add(bookmarked_tab, text='Bookmarked')
 
         # Apply a specific style for the inner notebook
@@ -634,7 +649,9 @@ class Notebook4(ttk.Frame):
         global username1
         print(num)
         BE.changePFP(username1, num)
+
         window.destroy()
+        MYGUI.openMainNotebooks(MYGUI, root)
 
 
 # General Layout + Login Page
@@ -822,19 +839,13 @@ class MYGUI:
 
     def validateLogin(self, root, username, password):
         global username1
+        username1 = username.get()
         print("username entered :", username.get())
         print("password entered :", password.get())
 
         # Backend
         r = BE.userlogin(username.get(), password.get())
 
-        # if username.get() == "username" and password.get() == "password":
-        #     username1 = username.get()
-        #     self.openMainNotebooks(root)
-        # else:
-        #     messagebox.showerror(title="Error", message="Invalid login.")
-
-        # Backend
         if r == 'Login successfully':
             self.openMainNotebooks(root)
         else:
@@ -882,19 +893,21 @@ class MYGUI:
         emailLabel = tk.Entry(recCreateAcc, textvariable=email, bg='#c69962').grid(row=2, column=1, sticky="w")
 
         # Create Account: Add account to database? and then return to login page
-        CBtn = tk.Button(recCreateAcc, text="Create", font=("Constantia", 10), command=lambda: self.openLoginPage(root))
+        CBtn = tk.Button(recCreateAcc, text="Create", font=("Constantia", 10),
+                         command=lambda: self.create_and_return(root, username, password, email))
         CBtn.grid(row=3, column=0, columnspan=2, sticky="n", ipady=5, pady=0)
 
         for widget in recCreateAcc.winfo_children():
             widget.grid(padx=5, pady=5)
 
     # Backend
-    '''
     def create_and_return(self, root, username, password, email):
-        print({"username": username.get(), "pw": password.get(), "email": email.get()})
+        print({
+                  "username": username.get(),
+                  "pw": password.get(),
+                  "email": email.get()})
         BE.addnewuser(username.get(), password.get(), email.get())
         self.openLoginPage(root)
-    '''
 
     def jokes_on_you(self, root):
         # Clear existing widgets in the root window
@@ -949,7 +962,7 @@ class MYGUI:
         usernameEntry.grid(row=0, column=1, sticky="w")
 
         # Ok
-        okBtn = tk.Button(recFP, text="ok", font=("Constantia", 10), command=lambda: self.changePwd(root))
+        okBtn = tk.Button(recFP, text="ok", font=("Constantia", 10), command=lambda: self.getUsername(root, username))
         okBtn.grid(row=1, column=0, columnspan=2, sticky="n", ipady=5, pady=0)
 
         # Back
@@ -959,16 +972,64 @@ class MYGUI:
         for widget in recFP.winfo_children():
             widget.grid(padx=5, pady=5)
 
-    def changePwd(self, root, username):
+    def getUsername(self, root, username):
+        global username1
         print("username entered :", username.get())
 
         # Backend
-        r = BE.userlogin(username.get())
+        r = BE.getusername(username.get())
 
-        if username.get() == username:
-            self.openMainNotebooks(root)
+        if r == True:
+            self.changePwdPage(root)
+            username1 = username.get()
         else:
             messagebox.showerror(title="Error", message="User does not exist.")
+
+    def changePwdPage(self, root):
+        # Clear existing widgets in the root window
+        for widget in root.winfo_children():
+            widget.destroy()
+
+        # Adjust size
+        root.geometry("1000x700")
+        # set minimum window size value
+        root.minsize(1000, 700)
+        # set maximum window size value
+        root.maxsize(1000, 700)
+
+        # Title
+        root.title("BURP Change Password")
+
+        recCP = ttk.Frame(root, style="Custom.TFrame", relief="flat", borderwidth=0)
+        recCP.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+        # Configure rows and columns to center widgets
+        recCP.columnconfigure(0, weight=1)
+        recCP.columnconfigure(1, weight=1)
+
+        # Pwd label and text entry box
+        PwdLabel = Label(recCP, text="New Password: ", font=("Consolas", 12))
+        PwdLabel.grid(row=0, column=0, sticky="e")
+
+        NewPwd = StringVar()
+        NewPwdEntry = tk.Entry(recCP, textvariable=NewPwd, bg='#c69962')
+        NewPwdEntry.grid(row=0, column=1, sticky="w")
+
+        # Change Pwd
+        okBtn = tk.Button(recCP, text="ok", font=("Constantia", 10),
+                          command=lambda: self.PwdisChanged(root, NewPwd.get()))
+        okBtn.grid(row=1, column=0, columnspan=2, sticky="n", ipady=5, pady=0)
+
+        # Back
+        backBtn = tk.Button(recCP, text="Back", font=("Constantia", 10), command=lambda: self.ForgetPassword(root))
+        backBtn.grid(row=2, column=0, columnspan=2, sticky="n", ipady=5, pady=0)
+
+        for widget in recCP.winfo_children():
+            widget.grid(padx=5, pady=5)
+
+    def PwdisChanged(self, root, NewPwd):
+        BE.forgotpass(username1, NewPwd)
+        self.openLoginPage(root)
 
     def openMainNotebooks(self, root):
         # Clear existing widgets in the root window
@@ -989,7 +1050,6 @@ class MYGUI:
         container = MyNotebookContainer(root)
         container.pack(expand=True, fill="both")
 
-        # Create widgets for Notebook1
         container.notebook.notebook1.create_widgets()
 
 
