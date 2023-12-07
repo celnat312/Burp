@@ -441,7 +441,7 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
             messagebox.showinfo(title="quack!", message="Bookmarked!")
 
         for i in text:
-            username = username1  # todo change to username1 afterwards
+            username = username1
             title = (i.split('\n'))[0]
             discription = (i.split('\n'))[1]
             link = (i.split('\n'))[2]
@@ -459,8 +459,7 @@ class Notebook3(ttk.Frame):  # Cook/Recipe
             descrip_label = ttk.Label(frame, text=discription, wraplength=800, background="#d0b38b")
             descrip_label.grid(row=2, column=0, columnspan=2, sticky="w", padx=(10, 0))
 
-            button = ttk.Button(frame, text="bookmark", command=lambda: update_bookmark_func(username, i))
-            print("burp bookmarked", username, i)
+            button = ttk.Button(frame, text="bookmark", command=lambda u=username, str=i: update_bookmark_func(u, str))
             button.grid(row=2, column=1, sticky="e", padx=(800, 0))
 
 
